@@ -36,3 +36,8 @@
 .sort-dropdown {
     padding: 5px; /* Adjust padding as needed */
 }
+
+th, td {
+    text-align: left;
+    padding: 10px
+}

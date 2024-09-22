@@ -6,17 +6,23 @@ from models import Contact
 def get_contacts():
     sort_by = request.args.get("sort_by", "first_name")
     sort_order = request.args.get("sort_order", "asc")
+    search_query = request.args.get("search", "")
 
-    sort_column = {
-        "first_name": Contact.first_name,
-        "last_name": Contact.last_name,
-        "email": Contact.email,
-    }.get(sort_by)
+    query = Contact.query
 
+    if search_query:
+        search = f"%{search_query}%"
+        query = query.filter(
+            (Contact.first_name.ilike(search)) |
+            (Contact.last_name.ilike(search)) |
+            (Contact.email.ilike(search))
+        )
+
+    sort_column = getattr(Contact, sort_by)
     if sort_order == "desc":
         sort_column = sort_column.desc()
-
-    contacts = Contact.query.order_by(sort_column).all()
+    contacts = query.order_by(sort_column).all()
+    
     json_contacts = list(map(lambda x: x.to_json(), contacts))
     return jsonify({"contacts": json_contacts})
 

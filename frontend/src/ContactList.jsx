@@ -2,7 +2,8 @@ import React, {useState} from "react"
 
 const ContactList = ({ contacts, updateContact, updateCallback }) => {
     const [sortBy, setSortBy] = useState("first_name");
-    const [sortOrder, setSortOrder] = useState("asc")
+    const [sortOrder, setSortOrder] = useState("asc");
+    const [search, setSearch] = useState("")
 
     const handleSortChange = (event) => {
         const selectedValue = event.target.value;
@@ -11,6 +12,12 @@ const ContactList = ({ contacts, updateContact, updateCallback }) => {
         setSortBy(field);
         setSortOrder(order);
         updateCallback(field, order);
+    }
+
+    const handleSearchChange = (event) => {
+        setSearch(event.target.value);
+        onSearchChange(event.target.value)
+        updateCallback()
     }
 
     const onDelete = async (id) => {
@@ -31,6 +38,12 @@ const ContactList = ({ contacts, updateContact, updateCallback }) => {
     
     return <div>
         <h2>Contacts</h2>
+        <input
+            type="text"
+            placeholder = "Search contacts..."
+            value = {search}
+            onChange = {handleSearchChange}
+        />
         <div className="sort-container">
             <p className="sort-label">Sort by:</p>
             <select className="sort-dropdown" onChange={handleSortChange}>

@@ -9,18 +9,23 @@ function App() {
   const [currentContact, setCurrentContact] = useState({})
   const [sortBy, setSortBy] = useState("first_name");
   const [sortOrder, setSortOrder] = useState("asc");
+  const [searchQuery, setSearchQuery] = useState("");
 
 
   useEffect(() => {
     fetchContacts()
-  }, []);
+  }, [searchQuery]);
 
   const fetchContacts = async (sortBy = "first_name", sortOrder = "asc") => {
-    const response = await fetch(`http://127.0.0.1:5000/contacts?sort_by=${sortBy}&sort_order=${sortOrder}`)
+    const response = await fetch(`http://127.0.0.1:5000/contacts?sort_by=${sortBy}&sort_order=${sortOrder}&search=${searchQuery}`)
     const data = await response.json()
     setContacts(data.contacts)
     console.log(data.contacts)
   };
+
+  const handleSearchChange = (search) => {
+    setSearchQuery(search);
+  }
 
   const closeModal = () => {
     setIsModalOpen(false)
@@ -51,6 +56,7 @@ function App() {
         setSortBy={setSortBy}
         setSortOrder={setSortOrder}
         fetchContacts={fetchContacts}
+        handleSearchChange={handleSearchChange}
       />
       <button onClick={openCreateModal}>Create New Contact</button>
       { isModalOpen && <div className="modal">
