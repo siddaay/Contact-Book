@@ -1,9 +1,24 @@
-import React, {useState} from "react"
+import React, {useState, useEffect} from "react"
 
-const ContactList = ({ contacts, updateContact, updateCallback }) => {
-    const [sortBy, setSortBy] = useState("first_name");
-    const [sortOrder, setSortOrder] = useState("asc");
-    const [search, setSearch] = useState("")
+const ContactList = ({ 
+  contacts, 
+  updateContact, 
+  updateCallback, 
+  handleSearchChange,
+  currentSortBy = "first_name",
+  currentSortOrder = "asc",
+  currentSearchQuery = ""
+}) => {
+    const [sortBy, setSortBy] = useState(currentSortBy);
+    const [sortOrder, setSortOrder] = useState(currentSortOrder);
+    const [search, setSearch] = useState(currentSearchQuery);
+
+    // Sync with parent component's state
+    useEffect(() => {
+        setSortBy(currentSortBy);
+        setSortOrder(currentSortOrder);
+        setSearch(currentSearchQuery);
+    }, [currentSortBy, currentSortOrder, currentSearchQuery]);
 
     const handleSortChange = (event) => {
         const selectedValue = event.target.value;
@@ -11,13 +26,14 @@ const ContactList = ({ contacts, updateContact, updateCallback }) => {
 
         setSortBy(field);
         setSortOrder(order);
-        updateCallback(field, order);
+        updateCallback(field, order, search);
     }
 
-    const handleSearchChange = (event) => {
-        setSearch(event.target.value);
-        onSearchChange(event.target.value)
-        updateCallback()
+    const onSearchChange = (event) => {
+        const searchValue = event.target.value;
+        setSearch(searchValue);
+        // Pass the search value to the parent component
+        handleSearchChange(searchValue);
     }
 
     const onDelete = async (id) => {
@@ -27,7 +43,7 @@ const ContactList = ({ contacts, updateContact, updateCallback }) => {
             }
             const response = await fetch(`http://127.0.0.1:5000/delete_contact/${id}`, options)
             if (response.status === 200) {
-                updateCallback(sortBy, sortOrder)
+                updateCallback(sortBy, sortOrder, search)
             } else {
                 console.error("Failed to delete")
             }
@@ -42,11 +58,11 @@ const ContactList = ({ contacts, updateContact, updateCallback }) => {
             type="text"
             placeholder = "Search contacts..."
             value = {search}
-            onChange = {handleSearchChange}
+            onChange = {onSearchChange}
         />
         <div className="sort-container">
             <p className="sort-label">Sort by:</p>
-            <select className="sort-dropdown" onChange={handleSortChange}>
+            <select className="sort-dropdown" onChange={handleSortChange} value={`${sortBy}-${sortOrder}`}>
                 <option value="first_name-asc">First Name</option>
                 <option value="first_name-desc">First Name (desc)</option>
                 <option value="last_name-asc">Last Name</option>

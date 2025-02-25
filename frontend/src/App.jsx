@@ -11,19 +11,24 @@ function App() {
   const [sortOrder, setSortOrder] = useState("asc");
   const [searchQuery, setSearchQuery] = useState("");
 
-
   useEffect(() => {
-    fetchContacts()
-  }, [searchQuery]);
+    fetchContacts(sortBy, sortOrder, searchQuery);
+  }, [searchQuery, sortBy, sortOrder]);
 
-  const fetchContacts = async (sortBy = "first_name", sortOrder = "asc") => {
-    const response = await fetch(`http://127.0.0.1:5000/contacts?sort_by=${sortBy}&sort_order=${sortOrder}&search=${searchQuery}`)
-    const data = await response.json()
-    setContacts(data.contacts)
-    console.log(data.contacts)
+  const fetchContacts = async (sortByParam = sortBy, sortOrderParam = sortOrder, searchParam = searchQuery) => {
+    try {
+      console.log(`Fetching contacts with: sort_by=${sortByParam}, sort_order=${sortOrderParam}, search=${searchParam}`);
+      const response = await fetch(`http://127.0.0.1:5000/contacts?sort_by=${sortByParam}&sort_order=${sortOrderParam}&search=${searchParam}`)
+      const data = await response.json()
+      setContacts(data.contacts)
+      console.log("Fetched contacts:", data.contacts)
+    } catch (error) {
+      console.error("Error fetching contacts:", error)
+    }
   };
 
   const handleSearchChange = (search) => {
+    console.log("Search changed to:", search);
     setSearchQuery(search);
   }
 
@@ -42,9 +47,9 @@ function App() {
     setIsModalOpen(true)
   }
 
-  const onUpdate = (sortBy, sortOrder) => {
+  const onUpdate = (sortByParam, sortOrderParam, searchParam) => {
     closeModal()
-    fetchContacts(sortBy, sortOrder)
+    fetchContacts(sortByParam, sortOrderParam, searchParam)
   }
 
   return (
@@ -53,16 +58,16 @@ function App() {
         contacts={contacts}
         updateContact={openEditModal}
         updateCallback={onUpdate}
-        setSortBy={setSortBy}
-        setSortOrder={setSortOrder}
-        fetchContacts={fetchContacts}
         handleSearchChange={handleSearchChange}
+        currentSortBy={sortBy}
+        currentSortOrder={sortOrder}
+        currentSearchQuery={searchQuery}
       />
       <button onClick={openCreateModal}>Create New Contact</button>
       { isModalOpen && <div className="modal">
         <div className="modal-content">
           <span className="close" onClick={closeModal}>&times;</span>
-          <ContactForm existingContact={currentContact} updateCallback={onUpdate}/>
+          <ContactForm existingContact={currentContact} updateCallback={() => onUpdate(sortBy, sortOrder, searchQuery)}/>
         </div>
       </div>
       }
